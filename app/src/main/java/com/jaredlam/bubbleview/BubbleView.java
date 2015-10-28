@@ -1,4 +1,4 @@
-package com.jaredlam.bubbleview;
+package com.sotao.app.views.BubbleLayout;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 
 /**
@@ -13,7 +14,10 @@ import android.view.View;
  */
 public class BubbleView extends View {
 
-    private static final int DEFAULT_PADDING = 10;
+    private static final int DEFAULT_PADDING_IN_DP = 10;
+    private static final int DEFAULT_TEXT_SIZE_IN_SP = 16;
+
+    private int mPadding = DEFAULT_PADDING_IN_DP;
 
     private Paint mPaint;
     private Paint mTextPaint;
@@ -43,7 +47,8 @@ public class BubbleView extends View {
         mPaint.setColor(Color.RED);
 
         mTextPaint = new Paint();
-        mTextPaint.setTextSize(18);
+        float textSizeInPx = getPxBySp(DEFAULT_TEXT_SIZE_IN_SP);
+        mTextPaint.setTextSize(textSizeInPx);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
         mTextPaint.setColor(Color.BLACK);
     }
@@ -73,7 +78,8 @@ public class BubbleView extends View {
                 break;
         }
 
-        setMeasuredDimension(widthSize + DEFAULT_PADDING * 2, heightSize + DEFAULT_PADDING * 2);
+        int paddingInPx = getPxByDp(mPadding);
+        setMeasuredDimension(widthSize + paddingInPx * 2, heightSize + paddingInPx * 2);
 
     }
 
@@ -97,6 +103,15 @@ public class BubbleView extends View {
         mTextPaint.setColor(getResources().getColor(colorRes));
     }
 
+    public void setTextSize(int valueInSp) {
+        float textSizeInPx = getPxBySp(valueInSp);
+        mTextPaint.setTextSize(textSizeInPx);
+    }
+
+    public void setBubblePadding(int paddingInDp){
+        this.mPadding = paddingInDp;
+    }
+
     public void setText(String label) {
         mText = label;
         mTextMeasureWidth = mTextPaint.measureText(label);
@@ -106,5 +121,16 @@ public class BubbleView extends View {
 
     public float getTextMeasureWidth() {
         return mTextMeasureWidth;
+    }
+
+
+    private float getPxBySp(int sp) {
+        final float fontScale = getResources().getDisplayMetrics().scaledDensity;
+        return (int) (sp * fontScale + 0.5f);
+    }
+
+    private int getPxByDp(float dp) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources()
+                .getDisplayMetrics());
     }
 }
