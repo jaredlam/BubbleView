@@ -1,4 +1,4 @@
-package com.sotao.app.views.BubbleLayout;
+package com.jaredlam.bubbleview;
 
 import android.content.Context;
 import android.graphics.Canvas;
