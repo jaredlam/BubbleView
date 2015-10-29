@@ -16,9 +16,6 @@ public class BubbleLayout extends ViewGroup {
 
     public static final int DEFAULT_PADDING = 10;
 
-    private static final int MIN_BUBBLE_RADIUS = 20;
-    private static final int MAX_BUBBLE_RADIUS = 60;
-
     double mRadiansPiece = 2 * Math.PI / 6;
     private int mRandomRadians = getRandomBetween(0, (int) (2 * Math.PI));
 
@@ -94,7 +91,7 @@ public class BubbleLayout extends ViewGroup {
     }
 
     public void addViewSortByWidth(BubbleView newChild) {
-        LayoutParams param = new LayoutParams((int) newChild.getTextMeasureWidth(), (int) newChild.getTextMeasureWidth());
+        LayoutParams param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         newChild.setLayoutParams(param);
         if (getChildCount() > 0) {
             for (int i = 0; i < getChildCount(); i++) {

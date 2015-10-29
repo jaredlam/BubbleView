@@ -2,6 +2,7 @@ package com.jaredlam.bubbleview;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.Gravity;
 
 /**
  * Created by Jared Luo on 15/10/25.
@@ -18,6 +19,9 @@ public class MainActivity extends Activity {
         for (String label : labels) {
             BubbleView bubbleView = new BubbleView(this);
             bubbleView.setText(label);
+            bubbleView.setGravity(Gravity.CENTER);
+            bubbleView.setPadding(10, 10, 10, 10);
+            bubbleView.setTextColor(getResources().getColor(android.R.color.holo_blue_dark));
             layout.addViewSortByWidth(bubbleView);
         }
 
