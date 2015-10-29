@@ -9,10 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -113,6 +110,7 @@ public class BubbleLayout extends ViewGroup {
     public void addViewSortByWidth(BubbleView newChild) {
         BubbleInfo info = new BubbleInfo();
         info.setRadians(getRandomRadians());
+        info.setSpeed(getRandomBetween(2, 5));
         LayoutParams param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         newChild.setLayoutParams(param);
         if (getChildCount() > 0) {
@@ -223,17 +221,15 @@ public class BubbleLayout extends ViewGroup {
             for (int i = 0; i < count; i++) {
                 View child = getChildAt(i);
                 BubbleInfo bubbleInfo = mBubbleInfos.get(i);
-                int[] center = getRadianPoint(2, child.getLeft() + child.getWidth() / 2, child.getTop() + child.getWidth() / 2, bubbleInfo.getRadians());
+                int[] center = getRadianPoint(bubbleInfo.getSpeed(), child.getLeft() + child.getWidth() / 2, child.getTop() + child.getWidth() / 2, bubbleInfo.getRadians());
                 Rect rect = getBounds(center[0] - child.getWidth() / 2, center[1] - child.getWidth() / 2, child.getMeasuredWidth(), child.getMeasuredHeight());
                 List<BubbleInfo> overlapList = hasOverlap(bubbleInfo);
                 if (overlapList.size() == 0) {
                     bubbleInfo.setRect(rect);
                     child.layout(rect.left, rect.top, rect.right, rect.bottom);
                 } else {
-                    float currentRadians = moveAway(bubbleInfo, child, overlapList);
                     moveAwayOthers(bubbleInfo);
-
-                    bubbleInfo.setRadians(currentRadians);
+                    moveAway(bubbleInfo, child, overlapList);
                 }
 
             }
@@ -241,43 +237,34 @@ public class BubbleLayout extends ViewGroup {
         }
     };
 
-    private float moveAway(BubbleInfo bubbleInfo, View child, List<BubbleInfo> overlapRect) {
+    private void moveAway(BubbleInfo bubbleInfo, View child, List<BubbleInfo> overlapRect) {
         Rect oldRect = bubbleInfo.getRect();
 
         int[] cooperate = getCooperatePoint(overlapRect);
 
         float overlapRadians = (float) getRadians(new float[]{oldRect.exactCenterX(), oldRect.exactCenterY()}, new float[]{cooperate[0], cooperate[1]});
+        double reverseRadians = getReverseRadians(overlapRadians);
 
-        int[] centerNew = getRadianPoint(2, child.getLeft() + child.getWidth() / 2, child.getTop() + child.getWidth() / 2, getReverseRadians(overlapRadians));
+        int[] centerNew = getRadianPoint(bubbleInfo.getSpeed(), child.getLeft() + child.getWidth() / 2, child.getTop() + child.getWidth() / 2, reverseRadians);
         Rect rectNew = getBounds(centerNew[0] - child.getWidth() / 2, centerNew[1] - child.getWidth() / 2, child.getMeasuredWidth(), child.getMeasuredHeight());
+
+        bubbleInfo.setRadians(reverseRadians);
+        bubbleInfo.setRect(rectNew);
 
         child.layout(rectNew.left, rectNew.top, rectNew.right, rectNew.bottom);
 
-        return overlapRadians;
     }
 
     private void moveAwayOthers(BubbleInfo bubbleInfo) {
-        Map<Integer, Float> radianMap = new HashMap<>();
         for (BubbleInfo info : mBubbleInfos) {
             if (info.getIndex() != bubbleInfo.getIndex()) {
                 List<BubbleInfo> overlapList = hasOverlap(info);
                 if (overlapList.size() > 0) {
-                    float radians = moveAway(info, getChildAt(info.getIndex()), overlapList);
-                    radianMap.put(info.getIndex(), radians);
+                    moveAway(info, getChildAt(info.getIndex()), overlapList);
                 }
             }
         }
-        Iterator<Map.Entry<Integer, Float>> iterator = radianMap.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<Integer, Float> entry = iterator.next();
-            for (BubbleInfo info : mBubbleInfos) {
-                if (info.getIndex() == entry.getKey()) {
-                    info.setRadians(entry.getValue());
-                    View child = getChildAt(info.getIndex());
-                    info.setRect(new Rect(child.getLeft(), child.getTop(), child.getRight(), child.getBottom()));
-                }
-            }
-        }
+
     }
 
     private int[] getCooperatePoint(List<BubbleInfo> overlapRect) {

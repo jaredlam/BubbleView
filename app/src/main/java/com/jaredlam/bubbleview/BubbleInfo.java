@@ -9,6 +9,7 @@ public class BubbleInfo {
     private int index;
     private Rect rect;
     private double radians;
+    private int speed;
 
     public int getIndex() {
         return index;
@@ -32,5 +33,13 @@ public class BubbleInfo {
 
     public void setRadians(double radians) {
         this.radians = radians;
+    }
+
+    public int getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(int speed) {
+        this.speed = speed;
     }
 }
