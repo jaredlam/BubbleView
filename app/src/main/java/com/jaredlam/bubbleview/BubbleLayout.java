@@ -17,23 +17,31 @@ public class BubbleLayout extends ViewGroup {
     public static final int DEFAULT_PADDING = 10;
 
     double mRadiansPiece = 2 * Math.PI / 6;
-    private int mRandomRadians = getRandomBetween(0, (int) (2 * Math.PI));
+    private int mRandomRadians = 0;
 
     public BubbleLayout(Context context) {
         super(context);
+        init();
     }
 
     public BubbleLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
 
     public BubbleLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        init();
+    }
+
+    private void init() {
+        mRandomRadians = getRandomBetween(0, (int) (2 * Math.PI));
     }
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         Rect baseRect = null;
+        int currentRadians = mRandomRadians;
         List<BubbleView> sortResult = sort();
         for (int i = 0; i < sortResult.size(); i++) {
             View child = sortResult.get(i);
@@ -46,8 +54,8 @@ public class BubbleLayout extends ViewGroup {
                 int baseCenterX = baseRect.left + baseRect.width() / 2;
                 int baseCenterY = baseRect.top + baseRect.width() / 2;
 
-                mRandomRadians += mRadiansPiece;
-                int[] center = getRadianPoint(baseRect.width() / 2 + DEFAULT_PADDING + radius, baseCenterX, baseCenterY, mRandomRadians);
+                currentRadians += mRadiansPiece;
+                int[] center = getRadianPoint(baseRect.width() / 2 + DEFAULT_PADDING + radius, baseCenterX, baseCenterY, currentRadians);
 
                 Rect rect = getBounds(center[0] - radius, center[1] - radius, child.getMeasuredWidth(), child.getMeasuredHeight());
                 child.layout(rect.left, rect.top, rect.right, rect.bottom);
