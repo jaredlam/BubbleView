@@ -1,6 +1,7 @@
 package com.jaredlam.bubbleview;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
 
@@ -21,7 +22,7 @@ public class MainActivity extends Activity {
             bubbleView.setText(label);
             bubbleView.setGravity(Gravity.CENTER);
             bubbleView.setPadding(10, 10, 10, 10);
-            bubbleView.setTextColor(getResources().getColor(android.R.color.holo_blue_dark));
+            bubbleView.setTextColor(Color.parseColor("#000000"));
             layout.addViewSortByWidth(bubbleView);
         }
 
