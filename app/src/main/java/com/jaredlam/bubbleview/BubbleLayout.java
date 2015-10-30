@@ -42,7 +42,6 @@ public class BubbleLayout extends ViewGroup {
     private void init() {
         mRandomRadians = getRandomBetween(0, (int) (2 * Math.PI));
         mHandler.sendEmptyMessage(0);
-
     }
 
     @Override
@@ -90,6 +89,8 @@ public class BubbleLayout extends ViewGroup {
 
         measureChildren(widthMeasureSpec, heightMeasureSpec);
 
+        setupBubbleInfoList();
+
         switch (widthMode) {
             case MeasureSpec.EXACTLY:
             case MeasureSpec.AT_MOST:
@@ -108,9 +109,7 @@ public class BubbleLayout extends ViewGroup {
     }
 
     public void addViewSortByWidth(BubbleView newChild) {
-        BubbleInfo info = new BubbleInfo();
-        info.setRadians(getRandomRadians());
-        info.setSpeed(getRandomBetween(2, 5));
+
         LayoutParams param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         newChild.setLayoutParams(param);
         if (getChildCount() > 0) {
@@ -121,16 +120,23 @@ public class BubbleLayout extends ViewGroup {
                     float textWidth = bubbleView.getTextMeasureWidth();
                     if (newChild.getTextMeasureWidth() > textWidth) {
                         super.addView(newChild, i);
-                        info.setIndex(i);
-                        mBubbleInfos.add(info);
                         return;
                     }
                 }
             }
         }
         super.addView(newChild);
-        info.setIndex(getChildCount() - 1);
-        mBubbleInfos.add(info);
+    }
+
+    private void setupBubbleInfoList() {
+        int count = getChildCount();
+        for (int i = 0; i < count; i++) {
+            BubbleInfo info = new BubbleInfo();
+            info.setRadians(getRandomRadians());
+            info.setSpeed(getRandomBetween(2, 5));
+            info.setIndex(i);
+            mBubbleInfos.add(info);
+        }
     }
 
 
@@ -218,7 +224,7 @@ public class BubbleLayout extends ViewGroup {
         @Override
         public void handleMessage(Message msg) {
             int count = getChildCount();
-            for (int i = 0; i < count; i++) {
+            for (int i = 0; i < count && mBubbleInfos.size() > 0; i++) {
                 View child = getChildAt(i);
                 BubbleInfo bubbleInfo = mBubbleInfos.get(i);
                 int[] center = getRadianPoint(bubbleInfo.getSpeed(), child.getLeft() + child.getWidth() / 2, child.getTop() + child.getWidth() / 2, bubbleInfo.getRadians());
