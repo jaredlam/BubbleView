@@ -249,7 +249,7 @@ public class BubbleLayout extends ViewGroup {
         child.layout(rect.left, rect.top, rect.right, rect.bottom);
     }
 
-    private void moveAway(BubbleInfo bubbleInfo, View child, List<BubbleInfo> overlapRect) {
+    private BubbleInfo getNewMoveInfo(BubbleInfo bubbleInfo, View child, List<BubbleInfo> overlapRect) {
         Rect oldRect = bubbleInfo.getRect();
 
         Point cooperate = getCooperatePoint(overlapRect);
@@ -264,19 +264,32 @@ public class BubbleLayout extends ViewGroup {
         int[] centerNew = getRadianPoint(bubbleInfo.getSpeed(), child.getLeft() + child.getWidth() / 2, child.getTop() + child.getWidth() / 2, reverseRadians);
         Rect rectNew = getBounds(centerNew[0] - child.getWidth() / 2, centerNew[1] - child.getWidth() / 2, child.getMeasuredWidth(), child.getMeasuredHeight());
 
-        bubbleInfo.setRadians(reverseRadians);
-        bubbleInfo.setRect(rectNew);
+        BubbleInfo bubbleInfoNew = new BubbleInfo();
+        bubbleInfoNew.setIndex(bubbleInfo.getIndex());
+        bubbleInfoNew.setSpeed(bubbleInfo.getSpeed());
+        bubbleInfoNew.setRadians(reverseRadians);
+        bubbleInfoNew.setRect(rectNew);
 
-        child.layout(rectNew.left, rectNew.top, rectNew.right, rectNew.bottom);
+        return bubbleInfoNew;
 
     }
 
     private void dealWithOverlap() {
+        List<BubbleInfo> tempBubbleInfoList = new ArrayList<>();
         for (BubbleInfo info : mBubbleInfos) {
             List<BubbleInfo> overlapList = hasOverlap(info);
             if (overlapList.size() > 0) {
-                moveAway(info, getChildAt(info.getIndex()), overlapList);
+                BubbleInfo bubbleInfoNew = getNewMoveInfo(info, getChildAt(info.getIndex()), overlapList);
+                tempBubbleInfoList.add(bubbleInfoNew);
             }
+        }
+
+        for (int i = 0; i < tempBubbleInfoList.size(); i++) {
+            BubbleInfo tempBubbleInfo = tempBubbleInfoList.get(i);
+            BubbleInfo oldBubbleInfo = mBubbleInfos.get(tempBubbleInfo.getIndex());
+            oldBubbleInfo.setRadians(tempBubbleInfo.getRadians());
+            oldBubbleInfo.setSpeed(tempBubbleInfo.getSpeed());
+            oldBubbleInfo.setRect(tempBubbleInfo.getRect());
         }
 
     }
