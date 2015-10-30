@@ -234,8 +234,7 @@ public class BubbleLayout extends ViewGroup {
                     bubbleInfo.setRect(rect);
                     child.layout(rect.left, rect.top, rect.right, rect.bottom);
                 } else {
-                    moveAwayOthers(bubbleInfo);
-                    moveAway(bubbleInfo, child, overlapList);
+                    dealWithOverlap();
                 }
 
             }
@@ -261,13 +260,11 @@ public class BubbleLayout extends ViewGroup {
 
     }
 
-    private void moveAwayOthers(BubbleInfo bubbleInfo) {
+    private void dealWithOverlap() {
         for (BubbleInfo info : mBubbleInfos) {
-            if (info.getIndex() != bubbleInfo.getIndex()) {
-                List<BubbleInfo> overlapList = hasOverlap(info);
-                if (overlapList.size() > 0) {
-                    moveAway(info, getChildAt(info.getIndex()), overlapList);
-                }
+            List<BubbleInfo> overlapList = hasOverlap(info);
+            if (overlapList.size() > 0) {
+                moveAway(info, getChildAt(info.getIndex()), overlapList);
             }
         }
 
