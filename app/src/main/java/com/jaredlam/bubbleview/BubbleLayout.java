@@ -1,6 +1,7 @@
 package com.jaredlam.bubbleview;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Message;
@@ -225,29 +226,39 @@ public class BubbleLayout extends ViewGroup {
         public void handleMessage(Message msg) {
             int count = getChildCount();
             for (int i = 0; i < count && mBubbleInfos.size() > 0; i++) {
-                View child = getChildAt(i);
+
                 BubbleInfo bubbleInfo = mBubbleInfos.get(i);
-                int[] center = getRadianPoint(bubbleInfo.getSpeed(), child.getLeft() + child.getWidth() / 2, child.getTop() + child.getWidth() / 2, bubbleInfo.getRadians());
-                Rect rect = getBounds(center[0] - child.getWidth() / 2, center[1] - child.getWidth() / 2, child.getMeasuredWidth(), child.getMeasuredHeight());
+
                 List<BubbleInfo> overlapList = hasOverlap(bubbleInfo);
                 if (overlapList.size() == 0) {
-                    bubbleInfo.setRect(rect);
-                    child.layout(rect.left, rect.top, rect.right, rect.bottom);
+                    reverseIfOverlapBounds(bubbleInfo);
+                    moveBubble(bubbleInfo);
                 } else {
                     dealWithOverlap();
                 }
-
             }
             startAnimate();
         }
     };
 
+    private void moveBubble(BubbleInfo info) {
+        View child = getChildAt(info.getIndex());
+        int[] center = getRadianPoint(info.getSpeed(), child.getLeft() + child.getWidth() / 2, child.getTop() + child.getWidth() / 2, info.getRadians());
+        Rect rect = getBounds(center[0] - child.getWidth() / 2, center[1] - child.getWidth() / 2, child.getMeasuredWidth(), child.getMeasuredHeight());
+        info.setRect(rect);
+        child.layout(rect.left, rect.top, rect.right, rect.bottom);
+    }
+
     private void moveAway(BubbleInfo bubbleInfo, View child, List<BubbleInfo> overlapRect) {
         Rect oldRect = bubbleInfo.getRect();
 
-        int[] cooperate = getCooperatePoint(overlapRect);
+        Point cooperate = getCooperatePoint(overlapRect);
+        Point overlapBoundPoint = ifOverlapBounds(bubbleInfo);
+        if (overlapBoundPoint != null) {
+            cooperate = new Point((cooperate.x + overlapBoundPoint.x) / 2, (cooperate.y + overlapBoundPoint.y) / 2);
+        }
 
-        float overlapRadians = (float) getRadians(new float[]{oldRect.exactCenterX(), oldRect.exactCenterY()}, new float[]{cooperate[0], cooperate[1]});
+        float overlapRadians = (float) getRadians(new float[]{oldRect.exactCenterX(), oldRect.exactCenterY()}, new float[]{cooperate.x, cooperate.y});
         double reverseRadians = getReverseRadians(overlapRadians);
 
         int[] centerNew = getRadianPoint(bubbleInfo.getSpeed(), child.getLeft() + child.getWidth() / 2, child.getTop() + child.getWidth() / 2, reverseRadians);
@@ -270,7 +281,7 @@ public class BubbleLayout extends ViewGroup {
 
     }
 
-    private int[] getCooperatePoint(List<BubbleInfo> overlapRect) {
+    private Point getCooperatePoint(List<BubbleInfo> overlapRect) {
         int totalX = 0;
         int totalY = 0;
         for (BubbleInfo info : overlapRect) {
@@ -278,7 +289,7 @@ public class BubbleLayout extends ViewGroup {
             totalY += info.getRect().exactCenterY();
         }
 
-        return new int[]{totalX / overlapRect.size(), totalY / overlapRect.size()};
+        return new Point(totalX / overlapRect.size(), totalY / overlapRect.size());
     }
 
     private double getReverseRadians(double radians) {
@@ -308,6 +319,51 @@ public class BubbleLayout extends ViewGroup {
             }
         }
         return overlapList;
+    }
+
+    private void reverseIfOverlapBounds(BubbleInfo bubbleInfo) {
+        Point overlapPoint = ifOverlapBounds(bubbleInfo);
+        if (overlapPoint != null) {
+            float overlapRadians = (float) getRadians(new float[]{bubbleInfo.getRect().exactCenterX(), bubbleInfo.getRect().exactCenterY()}, new float[]{overlapPoint.x, overlapPoint.y});
+            double reverseRadians = getReverseRadians(overlapRadians);
+            bubbleInfo.setRadians(reverseRadians);
+        }
+    }
+
+    private Point ifOverlapBounds(BubbleInfo bubbleInfo) {
+        Rect rect = new Rect(this.getLeft(), this.getTop(), this.getRight(), this.getBottom());
+        if (bubbleInfo.getRect() != null) {
+            Rect bubbleRect = bubbleInfo.getRect();
+            List<Point> overlapPoints = new ArrayList<>();
+            if (rect.left >= bubbleRect.left) {
+                Point overlapPoint = new Point(rect.left, bubbleRect.centerY());
+                overlapPoints.add(overlapPoint);
+            }
+            if (rect.top >= bubbleRect.top) {
+                Point overlapPoint = new Point(bubbleRect.centerX(), rect.top);
+                overlapPoints.add(overlapPoint);
+            }
+            if (rect.right <= bubbleRect.right) {
+                Point overlapPoint = new Point(rect.right, bubbleRect.centerY());
+                overlapPoints.add(overlapPoint);
+            }
+            if (rect.bottom <= bubbleRect.bottom) {
+                Point overlapPoint = new Point(bubbleRect.centerX(), rect.bottom);
+                overlapPoints.add(overlapPoint);
+            }
+
+            if (overlapPoints.size() > 0) {
+                int totalX = 0;
+                int totalY = 0;
+                for (Point point : overlapPoints) {
+                    totalX += point.x;
+                    totalY += point.y;
+                }
+                return new Point(totalX / overlapPoints.size(), totalY / overlapPoints.size());
+            }
+        }
+
+        return null;
     }
 
     private double getRandomRadians() {
