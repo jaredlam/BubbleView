@@ -232,12 +232,14 @@ public class BubbleLayout extends ViewGroup {
 
                 List<BubbleInfo> overlapList = hasOverlap(bubbleInfo);
 
-                reverseIfOverlapBounds(bubbleInfo);
-                moveBubble(bubbleInfo);
-
-                if (overlapList.size() > 0) {
+                Point overlapPoint = ifOverlapBounds(bubbleInfo);
+                if (overlapPoint != null) {
+                    reverseIfOverlapBounds(bubbleInfo);
+                } else if (overlapList.size() > 0) {
                     dealWithOverlap();
                 }
+
+                moveBubble(bubbleInfo);
             }
             startAnimate();
         }
@@ -338,10 +340,15 @@ public class BubbleLayout extends ViewGroup {
 
     private void reverseIfOverlapBounds(BubbleInfo bubbleInfo) {
         Point overlapPoint = ifOverlapBounds(bubbleInfo);
+        Rect totalRect = new Rect(this.getLeft(), this.getTop(), this.getRight(), this.getBottom());
         if (overlapPoint != null) {
             float overlapRadians = (float) getRadians(new float[]{bubbleInfo.getRect().exactCenterX(), bubbleInfo.getRect().exactCenterY()}, new float[]{overlapPoint.x, overlapPoint.y});
-            double reverseRadians = getReverseRadians(overlapRadians);
-            bubbleInfo.setRadians(reverseRadians);
+            if (!totalRect.contains(bubbleInfo.getRect().centerX(), bubbleInfo.getRect().centerY())) {
+                bubbleInfo.setRadians(overlapRadians);
+            } else {
+                double reverseRadians = getReverseRadians(overlapRadians);
+                bubbleInfo.setRadians(reverseRadians);
+            }
         }
     }
 
