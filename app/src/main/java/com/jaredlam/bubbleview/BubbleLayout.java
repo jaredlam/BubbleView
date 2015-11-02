@@ -24,6 +24,7 @@ public class BubbleLayout extends ViewGroup {
     private double mRadiansPiece = 2 * Math.PI / 6;
     private int mRandomRadians = 0;
     private List<BubbleInfo> mBubbleInfos = new ArrayList<>();
+    private Timer mTimer;
 
     public BubbleLayout(Context context) {
         super(context);
@@ -209,8 +210,8 @@ public class BubbleLayout extends ViewGroup {
     }
 
     private void startAnimate() {
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
+        mTimer = new Timer();
+        mTimer.schedule(new TimerTask() {
             @Override
             public void run() {
                 mHandler.sendEmptyMessage(0);
@@ -230,10 +231,11 @@ public class BubbleLayout extends ViewGroup {
                 BubbleInfo bubbleInfo = mBubbleInfos.get(i);
 
                 List<BubbleInfo> overlapList = hasOverlap(bubbleInfo);
-                if (overlapList.size() == 0) {
-                    reverseIfOverlapBounds(bubbleInfo);
-                    moveBubble(bubbleInfo);
-                } else {
+
+                reverseIfOverlapBounds(bubbleInfo);
+                moveBubble(bubbleInfo);
+
+                if (overlapList.size() > 0) {
                     dealWithOverlap();
                 }
             }
@@ -385,5 +387,14 @@ public class BubbleLayout extends ViewGroup {
 
     private double getRadians(float[] fromPoint, float[] toPoint) {
         return Math.atan2(toPoint[1] - fromPoint[1], toPoint[0] - fromPoint[0]);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
+        }
     }
 }
