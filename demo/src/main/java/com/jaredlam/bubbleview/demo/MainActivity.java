@@ -1,9 +1,12 @@
-package com.jaredlam.bubbleview;
+package com.jaredlam.bubbleview.demo;
 
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Gravity;
+
+import com.jaredlam.bubbleview.BubbleLayout;
+import com.jaredlam.bubbleview.BubbleView;
 
 /**
  * Created by Jared Luo on 15/10/25.
