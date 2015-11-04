@@ -3,10 +3,10 @@ Bubble view for Android
 
 ![alt tag](https://media.giphy.com/media/xTiTnhGVIMGO6z07oA/giphy.gif)
 
-- [Introduction](#Introduction)
-- [Download](#Download)
-- [Usage](#Usage)
-- [License](#Introduction)
+- [Introduction](#introduction)
+- [Download](#download)
+- [Usage](#usage)
+- [License](#license)
 
 # Introduction
 
@@ -36,8 +36,6 @@ dependencies {
 
 ```java
 BubbleLayout layout = (BubbleLayout) findViewById(R.id.bubble_layout);
-
-
 
 for (String label : labels) {
     BubbleView bubbleView = new BubbleView(this);
