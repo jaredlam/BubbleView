@@ -223,7 +223,9 @@ public class BubbleLayout extends ViewGroup {
     }
 
     private void startAnimate() {
-        mTimer = new Timer();
+        if (mTimer == null) {
+            mTimer = new Timer();
+        }
         mTimer.schedule(new TimerTask() {
             @Override
             public void run() {
