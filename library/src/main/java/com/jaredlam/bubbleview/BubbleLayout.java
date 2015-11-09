@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class BubbleLayout extends ViewGroup {
+public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
 
     public static final int DEFAULT_PADDING = 10;
 
@@ -66,25 +66,41 @@ public class BubbleLayout extends ViewGroup {
         List<BubbleView> sortResult = sort();
         for (int i = 0; i < sortResult.size(); i++) {
             View child = sortResult.get(i);
-            BubbleInfo bubbleInfo = mBubbleInfos.get(i);
-            BubbleView bubbleView = (BubbleView) child;
-            int radius = bubbleView.getMeasuredWidth() / 2;
-            if (i == 0) {
-                baseRect = getBounds(getMeasuredWidth() / 2 - radius, getMeasuredHeight() / 2 - radius, child.getMeasuredWidth(), child.getMeasuredHeight());
-                child.layout(baseRect.left, baseRect.top, baseRect.right, baseRect.bottom);
-                bubbleInfo.setRect(baseRect);
-            } else {
-                int baseCenterX = baseRect.left + baseRect.width() / 2;
-                int baseCenterY = baseRect.top + baseRect.width() / 2;
 
-                currentRadians += mRadiansPiece;
-                int[] center = getRadianPoint(baseRect.width() / 2 + DEFAULT_PADDING + radius, baseCenterX, baseCenterY, currentRadians);
+            BubbleInfo bubbleInfo = getBubbleInfoByView(child);
 
-                Rect rect = getBounds(center[0] - radius, center[1] - radius, child.getMeasuredWidth(), child.getMeasuredHeight());
-                child.layout(rect.left, rect.top, rect.right, rect.bottom);
-                bubbleInfo.setRect(rect);
+            if (bubbleInfo != null) {
+                BubbleView bubbleView = (BubbleView) child;
+                bubbleView.setMoveListener(this);
+                bubbleView.setBubbleInfo(bubbleInfo);
+                int radius = bubbleView.getMeasuredWidth() / 2;
+                if (i == 0) {
+                    baseRect = getBounds(getMeasuredWidth() / 2 - radius, getMeasuredHeight() / 2 - radius, child.getMeasuredWidth(), child.getMeasuredHeight());
+                    child.layout(baseRect.left, baseRect.top, baseRect.right, baseRect.bottom);
+                    bubbleInfo.setRect(baseRect);
+                } else {
+                    int baseCenterX = baseRect.left + baseRect.width() / 2;
+                    int baseCenterY = baseRect.top + baseRect.width() / 2;
+
+                    currentRadians += mRadiansPiece;
+                    int[] center = getRadianPoint(baseRect.width() / 2 + DEFAULT_PADDING + radius, baseCenterX, baseCenterY, currentRadians);
+
+                    Rect rect = getBounds(center[0] - radius, center[1] - radius, child.getMeasuredWidth(), child.getMeasuredHeight());
+                    child.layout(rect.left, rect.top, rect.right, rect.bottom);
+                    bubbleInfo.setRect(rect);
+                }
             }
         }
+    }
+
+    private BubbleInfo getBubbleInfoByView(View child) {
+        for (BubbleInfo info : mBubbleInfos) {
+            BubbleView bubbleView = (BubbleView) getChildAt(info.getIndex());
+            if (bubbleView == child) {
+                return info;
+            }
+        }
+        return null;
     }
 
     private int[] getRadianPoint(int amount, int x, int y, double radian) {
@@ -418,5 +434,11 @@ public class BubbleLayout extends ViewGroup {
             mTimer.cancel();
             mTimer = null;
         }
+    }
+
+    @Override
+    public void onMove(BubbleInfo bubbleInfo, int centerX, int centerY, int deltaX, int deltaY) {
+        float radians = (float) getRadians(new float[]{centerX, centerY}, new float[]{centerX + deltaX, centerY + deltaY});
+        bubbleInfo.setRadians(radians);
     }
 }

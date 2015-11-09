@@ -22,32 +22,44 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
+import android.view.ViewConfiguration;
 import android.widget.TextView;
 
 public class BubbleView extends TextView {
 
     private Paint mPaint;
 
+    private ViewConfiguration mViewConfiguration;
+    private int mLastX;
+    private int mLastY;
+
+    private boolean mIsMoving;
+    private MoveListener mMoveListener;
+    private BubbleInfo mBubbleInfo;
+
     public BubbleView(Context context) {
         super(context);
-        init();
+        init(context);
     }
 
     public BubbleView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
+        init(context);
     }
 
     public BubbleView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
+        init(context);
     }
 
-    private void init() {
+    private void init(Context context) {
         mPaint = new Paint();
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setAntiAlias(true);
         mPaint.setColor(Color.RED);
+
+        mViewConfiguration = ViewConfiguration.get(context);
     }
 
     @Override
@@ -80,4 +92,57 @@ public class BubbleView extends TextView {
         mPaint.setColor(color);
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        int action = event.getAction();
+
+        int rawX = (int) event.getRawX();
+        int rawY = (int) event.getRawY();
+
+        int[] location = new int[2];
+        getLocationOnScreen(location);
+        Rect rect = new Rect(location[0], location[1], location[0] + getWidth(), location[1] + getHeight());
+
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                mLastX = rawX;
+                mLastY = rawY;
+                if (rect.contains(mLastX, mLastY)) {
+                    mIsMoving = true;
+                }
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (mIsMoving) {
+                    int deltaX = rawX - mLastX;
+                    int deltaY = rawY - mLastY;
+                    if (Math.abs(deltaX) > mViewConfiguration.getScaledTouchSlop()
+                            || Math.abs(deltaY) > mViewConfiguration.getScaledTouchSlop()) {
+                        if (mMoveListener != null) {
+                            int centerX = getLeft() + getWidth() / 2;
+                            int centerY = getTop() + getHeight() / 2;
+                            mMoveListener.onMove(mBubbleInfo, centerX, centerY, deltaX, deltaY);
+                        }
+                        mLastX = rawX;
+                        mLastY = rawY;
+                    }
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                mIsMoving = false;
+                break;
+        }
+        return true;
+    }
+
+    public void setMoveListener(MoveListener moveListener) {
+        this.mMoveListener = moveListener;
+    }
+
+    public void setBubbleInfo(BubbleInfo bubbleInfo) {
+        this.mBubbleInfo = bubbleInfo;
+    }
+
+    public interface MoveListener {
+        void onMove(BubbleInfo bubbleInfo, int centerX, int centerY, int deltaX, int deltaY);
+    }
 }
