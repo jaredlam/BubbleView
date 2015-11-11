@@ -26,6 +26,7 @@ public class BubbleInfo {
     private Rect rect;
     private double radians;
     private int speed;
+    private int oldSpeed;
 
     public int getIndex() {
         return index;
@@ -57,5 +58,13 @@ public class BubbleInfo {
 
     public void setSpeed(int speed) {
         this.speed = speed;
+    }
+
+    public int getOldSpeed() {
+        return oldSpeed;
+    }
+
+    public void setOldSpeed(int oldSpeed) {
+        this.oldSpeed = oldSpeed;
     }
 }

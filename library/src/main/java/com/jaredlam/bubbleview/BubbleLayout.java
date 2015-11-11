@@ -165,6 +165,7 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
             BubbleInfo info = new BubbleInfo();
             info.setRadians(getRandomRadians());
             info.setSpeed(getRandomBetween(2, 5));
+            info.setOldSpeed(info.getSpeed());
             info.setIndex(i);
             mBubbleInfos.add(info);
         }
@@ -284,6 +285,12 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
         child.layout(rect.left, rect.top, rect.right, rect.bottom);
     }
 
+    private void slowerBubbleIfNeeded(BubbleInfo info) {
+        if (info.getOldSpeed() > 0 && info.getSpeed() > info.getOldSpeed()) {
+            info.setSpeed(info.getSpeed() - 1);
+        }
+    }
+
     private BubbleInfo getNewMoveInfo(BubbleInfo bubbleInfo, View child, List<BubbleInfo> overlapRect) {
         Rect oldRect = bubbleInfo.getRect();
 
@@ -302,6 +309,7 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
         BubbleInfo bubbleInfoNew = new BubbleInfo();
         bubbleInfoNew.setIndex(bubbleInfo.getIndex());
         bubbleInfoNew.setSpeed(bubbleInfo.getSpeed());
+        bubbleInfoNew.setOldSpeed(bubbleInfo.getOldSpeed());
         bubbleInfoNew.setRadians(reverseRadians);
         bubbleInfoNew.setRect(rectNew);
 
@@ -315,6 +323,7 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
             List<BubbleInfo> overlapList = hasOverlap(info);
             if (overlapList.size() > 0) {
                 BubbleInfo bubbleInfoNew = getNewMoveInfo(info, getChildAt(info.getIndex()), overlapList);
+                slowerBubbleIfNeeded(bubbleInfoNew);
                 tempBubbleInfoList.add(bubbleInfoNew);
             }
         }
@@ -323,6 +332,8 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
             BubbleInfo tempBubbleInfo = tempBubbleInfoList.get(i);
             BubbleInfo oldBubbleInfo = mBubbleInfos.get(tempBubbleInfo.getIndex());
             oldBubbleInfo.setRadians(tempBubbleInfo.getRadians());
+            oldBubbleInfo.setOldSpeed(tempBubbleInfo.getOldSpeed());
+            oldBubbleInfo.setIndex(tempBubbleInfo.getIndex());
             oldBubbleInfo.setSpeed(tempBubbleInfo.getSpeed());
             oldBubbleInfo.setRect(tempBubbleInfo.getRect());
         }
@@ -380,6 +391,7 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
                 double reverseRadians = getReverseRadians(overlapRadians);
                 bubbleInfo.setRadians(reverseRadians);
             }
+            slowerBubbleIfNeeded(bubbleInfo);
         }
     }
 
@@ -437,8 +449,12 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
     }
 
     @Override
-    public void onMove(BubbleInfo bubbleInfo, int centerX, int centerY, int deltaX, int deltaY) {
-        float radians = (float) getRadians(new float[]{centerX, centerY}, new float[]{centerX + deltaX, centerY + deltaY});
-        bubbleInfo.setRadians(radians);
+    public void onMove(BubbleInfo bubbleInfo, int centerX, int centerY, int deltaX, int deltaY, double velocity) {
+        velocity /= 10;
+        if (velocity > bubbleInfo.getSpeed()) {
+            float radians = (float) getRadians(new float[]{centerX, centerY}, new float[]{centerX + deltaX, centerY + deltaY});
+            bubbleInfo.setRadians(radians);
+            bubbleInfo.setSpeed((int) velocity);
+        }
     }
 }

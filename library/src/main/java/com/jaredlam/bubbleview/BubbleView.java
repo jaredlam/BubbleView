@@ -23,6 +23,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.VelocityTracker;
 import android.view.ViewConfiguration;
 import android.widget.TextView;
 
@@ -31,6 +32,7 @@ public class BubbleView extends TextView {
     private Paint mPaint;
 
     private ViewConfiguration mViewConfiguration;
+    private VelocityTracker mVelocityTracker;
     private int mLastX;
     private int mLastY;
 
@@ -94,7 +96,9 @@ public class BubbleView extends TextView {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        int action = event.getAction();
+        int action = event.getActionMasked();
+        int index = event.getActionIndex();
+        int pointerId = event.getPointerId(index);
 
         int rawX = (int) event.getRawX();
         int rawY = (int) event.getRawY();
@@ -110,8 +114,18 @@ public class BubbleView extends TextView {
                 if (rect.contains(mLastX, mLastY)) {
                     mIsMoving = true;
                 }
+
+                if (mVelocityTracker == null) {
+                    mVelocityTracker = VelocityTracker.obtain();
+                } else {
+                    mVelocityTracker.clear();
+                }
+                mVelocityTracker.addMovement(event);
+
                 break;
             case MotionEvent.ACTION_MOVE:
+                mVelocityTracker.addMovement(event);
+                mVelocityTracker.computeCurrentVelocity(10);
                 if (mIsMoving) {
                     int deltaX = rawX - mLastX;
                     int deltaY = rawY - mLastY;
@@ -120,7 +134,10 @@ public class BubbleView extends TextView {
                         if (mMoveListener != null) {
                             int centerX = getLeft() + getWidth() / 2;
                             int centerY = getTop() + getHeight() / 2;
-                            mMoveListener.onMove(mBubbleInfo, centerX, centerY, deltaX, deltaY);
+                            float velocityX = mVelocityTracker.getXVelocity(pointerId);
+                            float velocityY = mVelocityTracker.getYVelocity(pointerId);
+                            double velocity = Math.sqrt(Math.pow(velocityX, 2) + Math.pow(velocityY, 2));
+                            mMoveListener.onMove(mBubbleInfo, centerX, centerY, deltaX, deltaY, velocity);
                         }
                         mLastX = rawX;
                         mLastY = rawY;
@@ -129,6 +146,10 @@ public class BubbleView extends TextView {
                 break;
             case MotionEvent.ACTION_UP:
                 mIsMoving = false;
+                break;
+            case MotionEvent.ACTION_CANCEL:
+                mIsMoving = false;
+                mVelocityTracker.recycle();
                 break;
         }
         return true;
@@ -143,6 +164,6 @@ public class BubbleView extends TextView {
     }
 
     public interface MoveListener {
-        void onMove(BubbleInfo bubbleInfo, int centerX, int centerY, int deltaX, int deltaY);
+        void onMove(BubbleInfo bubbleInfo, int centerX, int centerY, int deltaX, int deltaY, double velocity);
     }
 }
