@@ -34,19 +34,20 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
 
     public static final int DEFAULT_PADDING = 10;
 
+    private int minPxPerSecond = 200;
+    private int maxPxPerSecond = 500;
+
     private double mRadiansPiece = 2 * Math.PI / 6;
     private int mRandomRadians = 0;
     private List<BubbleInfo> mBubbleInfos = new ArrayList<>();
     private Timer mTimer;
 
     public BubbleLayout(Context context) {
-        super(context);
-        init();
+        this(context, null);
     }
 
     public BubbleLayout(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
+        this(context, attrs, 0);
     }
 
     public BubbleLayout(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -164,7 +165,8 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
         for (int i = 0; i < count; i++) {
             BubbleInfo info = new BubbleInfo();
             info.setRadians(getRandomRadians());
-            info.setSpeed(getRandomBetween(2, 5));
+            //divider by 100 because handler send message every 10 milliseconds.
+            info.setSpeed(getRandomBetween(minPxPerSecond / 100, maxPxPerSecond / 100));
             info.setOldSpeed(info.getSpeed());
             info.setIndex(i);
             mBubbleInfos.add(info);
