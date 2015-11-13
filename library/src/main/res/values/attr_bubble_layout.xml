@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="bubbleview_BubbleLayout">
+        <attr name="bubbleview_minSpeed" format="dimension" />
+        <attr name="bubbleview_maxSpeed" format="dimension" />
+        <attr name="bubbleview_padding" format="dimension" />
+    </declare-styleable>
+</resources>

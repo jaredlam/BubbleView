@@ -17,6 +17,7 @@
 package com.jaredlam.bubbleview;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Handler;
@@ -33,9 +34,12 @@ import java.util.TimerTask;
 public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
 
     public static final int DEFAULT_PADDING = 10;
+    public static final int DEFAULT_MIN_SPEED = 200;
+    public static final int DEFAULT_MAX_SPEED = 500;
 
-    private int minPxPerSecond = 200;
-    private int maxPxPerSecond = 500;
+    private int padding = DEFAULT_PADDING;
+    private int minPxPerTenMilliseconds = DEFAULT_MIN_SPEED;
+    private int maxPxPerTenMilliseconds = DEFAULT_MAX_SPEED;
 
     private double mRadiansPiece = 2 * Math.PI / 6;
     private int mRandomRadians = 0;
@@ -52,10 +56,23 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
 
     public BubbleLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
+        init(context, attrs, defStyleAttr);
     }
 
-    private void init() {
+    private void init(Context context, AttributeSet attrs, int defStyleAttr) {
+        TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.bubbleview_BubbleLayout, defStyleAttr, 0);
+        for (int i = 0; i < typedArray.getIndexCount(); i++) {
+            int id = typedArray.getIndex(i);
+            if (id == R.styleable.bubbleview_BubbleLayout_bubbleview_minSpeed) {
+                minPxPerTenMilliseconds = typedArray.getDimensionPixelSize(id, DEFAULT_MIN_SPEED);
+            } else if (id == R.styleable.bubbleview_BubbleLayout_bubbleview_maxSpeed) {
+                maxPxPerTenMilliseconds = typedArray.getDimensionPixelSize(id, DEFAULT_MAX_SPEED);
+            } else if (id == R.styleable.bubbleview_BubbleLayout_bubbleview_padding) {
+                padding = typedArray.getDimensionPixelSize(id, DEFAULT_PADDING);
+            }
+        }
+        typedArray.recycle();
+
         mRandomRadians = getRandomBetween(0, (int) (2 * Math.PI));
         mHandler.sendEmptyMessage(0);
     }
@@ -84,7 +101,7 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
                     int baseCenterY = baseRect.top + baseRect.width() / 2;
 
                     currentRadians += mRadiansPiece;
-                    int[] center = getRadianPoint(baseRect.width() / 2 + DEFAULT_PADDING + radius, baseCenterX, baseCenterY, currentRadians);
+                    int[] center = getRadianPoint(baseRect.width() / 2 + padding + radius, baseCenterX, baseCenterY, currentRadians);
 
                     Rect rect = getBounds(center[0] - radius, center[1] - radius, child.getMeasuredWidth(), child.getMeasuredHeight());
                     child.layout(rect.left, rect.top, rect.right, rect.bottom);
@@ -165,8 +182,7 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
         for (int i = 0; i < count; i++) {
             BubbleInfo info = new BubbleInfo();
             info.setRadians(getRandomRadians());
-            //divider by 100 because handler send message every 10 milliseconds.
-            info.setSpeed(getRandomBetween(minPxPerSecond / 100, maxPxPerSecond / 100));
+            info.setSpeed(getRandomBetween(minPxPerTenMilliseconds, maxPxPerTenMilliseconds));
             info.setOldSpeed(info.getSpeed());
             info.setIndex(i);
             mBubbleInfos.add(info);
