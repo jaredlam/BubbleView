@@ -20,20 +20,25 @@ Bubble view for Android
 
 - Bubble layout will try to contains all child inside its bounds.
 
+- Support gestures.
+
 # Download
 ```groovy
 dependencies {
-    compile 'com.jaredlam.bubbleview:library:0.1.0'
+    compile 'com.jaredlam.bubbleview:library:0.1.1'
 }
 ```
 
 # Usage
 
 ```xml
-<com.jaredlam.bubbleview.BubbleLayout
+    <com.jaredlam.bubbleview.BubbleLayout
         android:id="@+id/bubble_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        app:bubbleview_maxSpeed="3dp"
+        app:bubbleview_minSpeed="1dp"
+        app:bubbleview_padding="10dp" />
 ```
 
 ```java
