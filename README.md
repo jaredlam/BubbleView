@@ -3,7 +3,7 @@ Bubble view for Android
 
  [ ![Download](https://api.bintray.com/packages/jaredlam/maven/BubbleView/images/download.svg) ](https://bintray.com/jaredlam/maven/BubbleView/_latestVersion)
 
-![alt tag](https://media.giphy.com/media/xTiTnhGVIMGO6z07oA/giphy.gif)
+![alt tag](https://raw.githubusercontent.com/jaredlam/BubbleView/master/Bubble.gif)
 
 - [Introduction](#introduction)
 - [Download](#download)
