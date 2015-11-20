@@ -468,7 +468,7 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
 
     @Override
     public void onMove(BubbleInfo bubbleInfo, int centerX, int centerY, int deltaX, int deltaY, double velocity) {
-        velocity /= 10;
+        velocity /= 6;
         if (velocity > bubbleInfo.getSpeed()) {
             float radians = (float) getRadians(new float[]{centerX, centerY}, new float[]{centerX + deltaX, centerY + deltaY});
             bubbleInfo.setRadians(radians);
