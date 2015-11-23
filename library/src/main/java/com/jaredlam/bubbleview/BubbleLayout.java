@@ -26,6 +26,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -45,6 +46,8 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
     private int mRandomRadians = 0;
     private List<BubbleInfo> mBubbleInfos = new ArrayList<>();
     private Timer mTimer;
+
+    private MyHandler mHandler;
 
     public BubbleLayout(Context context) {
         this(context, null);
@@ -74,6 +77,7 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
         typedArray.recycle();
 
         mRandomRadians = getRandomBetween(0, (int) (2 * Math.PI));
+        mHandler = new MyHandler(this);
         mHandler.sendEmptyMessage(0);
     }
 
@@ -272,28 +276,37 @@ public class BubbleLayout extends ViewGroup implements BubbleView.MoveListener {
 
     }
 
-    private Handler mHandler = new Handler() {
+    private static class MyHandler extends Handler {
+        private WeakReference<BubbleLayout> mBubbleLayout;
+
+        public MyHandler(BubbleLayout layout) {
+            this.mBubbleLayout = new WeakReference<>(layout);
+        }
+
         @Override
         public void handleMessage(Message msg) {
-            int count = getChildCount();
-            for (int i = 0; i < count && mBubbleInfos.size() > 0; i++) {
+            BubbleLayout layout = mBubbleLayout.get();
+            int count = layout.getChildCount();
+            for (int i = 0; i < count && layout.mBubbleInfos.size() > 0; i++) {
 
-                BubbleInfo bubbleInfo = mBubbleInfos.get(i);
+                BubbleInfo bubbleInfo = layout.mBubbleInfos.get(i);
 
-                List<BubbleInfo> overlapList = hasOverlap(bubbleInfo);
+                List<BubbleInfo> overlapList = layout.hasOverlap(bubbleInfo);
 
-                Point overlapPoint = ifOverlapBounds(bubbleInfo);
+                Point overlapPoint = layout.ifOverlapBounds(bubbleInfo);
                 if (overlapPoint != null) {
-                    reverseIfOverlapBounds(bubbleInfo);
+                    layout.reverseIfOverlapBounds(bubbleInfo);
                 } else if (overlapList.size() > 0) {
-                    dealWithOverlap();
+                    layout.dealWithOverlap();
                 }
 
-                moveBubble(bubbleInfo);
+                layout.moveBubble(bubbleInfo);
             }
-            startAnimate();
+            layout.startAnimate();
         }
-    };
+    }
+
+    ;
 
     private void moveBubble(BubbleInfo info) {
         View child = getChildAt(info.getIndex());
